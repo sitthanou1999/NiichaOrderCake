@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Niichá Cafe</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Poppins', sans-serif;
+    background:#f5ebe0;
+    color:#333;
+}
+
+header{
+    background:linear-gradient(135deg,#689080,#8eb5a5);
+    color:white;
+    padding:35px 20px;
+    text-align:center;
+    box-shadow:0 10px 30px rgba(0,0,0,0.1);
+}
+
+header h1{
+    font-size:3rem;
+}
+
+header p{
+    margin-top:10px;
+    opacity:0.9;
+}
+
+.container{
+    width:95%;
+    max-width:1400px;
+    margin:auto;
+    padding:30px 0;
+}
+
+.top-bar{
+    display:flex;
+    gap:15px;
+    margin-bottom:25px;
+    flex-wrap:wrap;
+    align-items:center;
+}
+
+.search-box{
+    flex:1;
+    min-width: 250px;
+}
+
+.search-box input{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:15px;
+    font-size:16px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.08);
+}
+
+/* Category Filter Tabs */
+.category-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    border: none;
+    background: white;
+    color: #689080;
+    font-weight: 600;
+    border-radius: 20px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    transition: 0.3s;
+}
+
+.tab-btn.active, .tab-btn:hover {
+    background: #689080;
+    color: white;
+}
+
+.cart-btn{
+    border:none;
+    background:#689080;
+    color:white;
+    padding:15px 25px;
+    border-radius:15px;
+    cursor:pointer;
+    font-weight:700;
+    transition: transform 0.2s;
+}
+
+.cart-btn.bump {
+    transform: scale(1.1);
+}
+
+.cake-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:25px;
+}
+
+.card{
+    background:white;
+    border-radius:25px;
+    overflow:hidden;
+    box-shadow:0 10px 30px rgba(0,0,0,0.08);
+    transition:0.3s;
+    display: flex;
+    flex-direction: column;
+}
+
+.card:hover{
+    transform:translateY(-8px);
+}
+
+.card-image{
+    width:100%;
+    height:320px;
+    background:#f7f7f7;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    padding:10px;
+}
+
+.card img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    object-position:center;
+    border-radius:18px;
+}
+
+.card-content{
+    padding:20px;
+    flex-grow: 1;
+}
+
+.card-title{
+    font-size:1.3rem;
+    font-weight:700;
+    margin-bottom:10px;
+}
+
+.card-price{
+    color:#689080;
+    font-weight:700;
+    margin-bottom:15px;
+}
+
+.card-actions{
+    display:flex;
+    gap:10px;
+    padding:0 20px 20px;
+}
+
+.btn{
+    flex:1;
+    border:none;
+    padding:12px;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:700;
+}
+
+.btn-cart{
+    background:#689080;
+    color:white;
+}
+
+.btn-delete{
+    background:#ff5d5d;
+    color:white;
+    display: none; /* ເຊື່ອງໄວ້ກ່ອນ ຈະສະແດງສະເພາະຕອນ Admin login */
+}
+
+.admin-toggle{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    width:70px;
+    height:70px;
+    border:none;
+    border-radius:50%;
+    background:#689080;
+    color:white;
+    font-size:28px;
+    cursor:pointer;
+    z-index:999;
+}
+
+.admin-panel{
+    position:fixed;
+    top:0;
+    right:-450px;
+    width:400px;
+    height:100vh;
+    background:white;
+    padding:25px;
+    overflow:auto;
+    transition:0.4s;
+    z-index:1000;
+    box-shadow:-10px 0 30px rgba(0,0,0,0.15);
+}
+
+.admin-panel.active{
+    right:0;
+}
+
+.admin-panel input,
+.admin-panel textarea,
+.admin-panel select{
+    width:100%;
+    padding:14px;
+    border:1px solid #ddd;
+    border-radius:12px;
+    margin-bottom:15px;
+}
+
+.admin-panel button{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:12px;
+    background:#689080;
+    color:white;
+    font-weight:700;
+    cursor:pointer;
+    margin-bottom:10px;
+}
+
+.cart-modal,
+.login-modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.5);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:2000;
+}
+
+.modal-content{
+    background:white;
+    width:95%;
+    max-width:550px;
+    border-radius:25px;
+    padding:25px;
+    max-height:90vh;
+    overflow:auto;
+}
+
+.modal-content h2{
+    color:#689080;
+    margin-bottom:20px;
+}
+
+/* Cart Item Upgrade Style */
+.cart-item{
+    background: #fdfbf7;
+    border: 1px solid #eedecf;
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.cart-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed #ddd;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+}
+
+.quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.qty-btn {
+    background: #e0d4c8;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.cart-item-details label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #666;
+    display: block;
+    margin-top: 8px;
+}
+
+.cart-item-details input, .cart-item-details select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-top: 4px;
+    font-size: 14px;
+}
+
+.checkout-btn{
+    width:100%;
+    border:none;
+    padding:15px;
+    border-radius:15px;
+    background:#689080;
+    color:white;
+    font-weight:700;
+    cursor:pointer;
+    margin-top:15px;
+}
+
+.analytics{
+    background:#f7f7f7;
+    padding:20px;
+    border-radius:20px;
+    margin-top:20px;
+}
+
+.analytics p{
+    margin-bottom:10px;
+}
+
+@media(max-width:768px){
+    header h1{
+        font-size:2rem;
+    }
+    .admin-panel{
+        width:100%;
+    }
+    .card-image{
+        height:260px;
+    }
+}
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Niichá Cafe</h1>
+    <p>ເລືອກເຄັກທີ່ເຈົ້າມັກ (Try some of our favourites!)</p>
+</header>
+
+<div class="container">
+    <div class="top-bar">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="ຄົ້ນຫາເຄັກ..." onkeyup="searchCake()">
+        </div>
+        <button class="cart-btn" id="cartBtn" onclick="openCart()">
+            🛒 ກະຕ່າ (<span id="cartCount">0</span>)
+        </button>
+    </div>
+
+    <div class="category-tabs" id="categoryTabs">
+        <button class="tab-btn active" onclick="filterCategory('All')">ທັງໝົດ</button>
+        <button class="tab-btn" onclick="filterCategory('Birthday')">Birthday</button>
+        <button class="tab-btn" onclick="filterCategory('Wedding')">Wedding</button>
+        <button class="tab-btn" onclick="filterCategory('Premium')">Premium</button>
+    </div>
+
+    <div class="cake-grid" id="cakeGrid"></div>
+</div>
+
+<button class="admin-toggle" onclick="openLogin()">⚙️</button>
+
+<div class="admin-panel" id="adminPanel">
+    <h2>Admin Dashboard</h2>
+    <input type="text" id="cakeName" placeholder="Cake Name">
+    <input type="text" id="cakePrice" placeholder="Starting from 250,000 LAK">
+    <input type="text" id="cakeImage" placeholder="Image URL">
+    <select id="cakeCategory">
+        <option value="Birthday">Birthday</option>
+        <option value="Wedding">Wedding</option>
+        <option value="Premium">Premium</option>
+    </select>
+    <textarea id="cakeDescription" placeholder="Description"></textarea>
+    <button onclick="addCake()">Add Cake</button>
+    <button onclick="resetData()" style="background: #999;">Reset All Data</button>
+
+    <div class="analytics">
+        <h3>Analytics</h3>
+        <p>Total Cakes: <span id="totalCakes">0</span></p>
+        <p>Total Orders: <span id="totalOrders">0</span></p>
+    </div>
+</div>
+
+<div class="cart-modal" id="cartModal">
+    <div class="modal-content">
+        <h2>Shopping Cart</h2>
+        <div id="cartItems"></div>
+        
+        <button class="checkout-btn" onclick="checkout()">Checkout via WhatsApp</button>
+        <button class="checkout-btn" onclick="closeCart()" style="background:#999; margin-top: 8px;">Close</button>
+    </div>
+</div>
+
+<div class="login-modal" id="loginModal">
+    <div class="modal-content">
+        <h2>Admin Login</h2>
+        <input type="password" id="adminPassword" placeholder="Enter Password">
+        <button class="checkout-btn" onclick="loginAdmin()">Login</button>
+        <button class="checkout-btn" onclick="document.getElementById('loginModal').style.display='none'" style="background:#999; margin-top: 8px;">Cancel</button>
+    </div>
+</div>
+
+<script>
+// ຕົວແປຫຼັກ
+let cakes = JSON.parse(localStorage.getItem('cakes')) || [
+    { id: 1, name: 'Matcha Cloud', price: 'Starting from 250,000 LAK', category: 'Premium', description: 'Premium Matcha Cake', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=1000' },
+    { id: 2, name: 'Chocolate Dream', price: 'Starting from 320,000 LAK', category: 'Birthday', description: 'Luxury Chocolate Cake', image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?q=80&w=1000' }
+];
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
+let orders = JSON.parse(localStorage.getItem('orders')) || [];
+let currentCategory = 'All';
+let isAdmin = false;
+
+function saveData(){
+    localStorage.setItem('cakes', JSON.stringify(cakes));
+    localStorage.setItem('cart', JSON.stringify(cart));
+    localStorage.setItem('orders', JSON.stringify(orders));
+}
+
+// ສະແດງລາຍການເຄັກໜ້າທຳອິດ
+function renderCakes(){
+    const grid = document.getElementById('cakeGrid');
+    grid.innerHTML = '';
+
+    const filteredCakes = cakes.filter(cake => currentCategory === 'All' || cake.category === currentCategory);
+
+    filteredCakes.forEach(cake => {
+        grid.innerHTML += `
+        <div class="card">
+            <div class="card-image">
+                <img src="${cake.image}" alt="${cake.name}">
+            </div>
+            <div class="card-content">
+                <div class="card-title">${cake.name}</div>
+                <div class="card-price">${cake.price}</div>
+                <p style="color:#777; font-size:14px;">${cake.description}</p>
+            </div>
+            <div class="card-actions">
+                <button class="btn btn-cart" onclick="addToCart(${cake.id})">ເພີ່ມເຂົ້າກະຕ່າ</button>
+                <button class="btn btn-delete" id="deleteBtn-${cake.id}" style="display: ${isAdmin ? 'block' : 'none'}" onclick="deleteCake(${cake.id})">Delete</button>
+            </div>
+        </div>
+        `;
+    });
+    updateAnalytics();
+}
+
+// ປ່ຽນໝວດໝູ່
+function filterCategory(category) {
+    currentCategory = category;
+    const buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(btn => {
+        if(btn.innerText === (category === 'All' ? 'ທັງໝົດ' : category)) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    renderCakes();
+}
+
+// ເພີ່ມເຂົ້າກະຕ່າ
+function addToCart(id){
+    const cake = cakes.find(c => c.id === id);
+    
+    // ເຊັກວ່າເຄັກນີ້ມີໃນກະຕ່າແລ້ວບໍ່
+    const existingItem = cart.find(item => item.id === id);
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cart.push({
+            ...cake,
+            quantity: 1,
+            size: '1 ປອນ',
+            message: '',
+            pickupDate: ''
+        });
+    }
+
+    saveData();
+    updateCartCount();
+    
+    // ໃສ່ Animation ໃຫ້ປຸ່ມກະຕ່າເດັ້ງ
+    const cartBtn = document.getElementById('cartBtn');
+    cartBtn.classList.add('bump');
+    setTimeout(() => cartBtn.classList.remove('bump'), 200);
+}
+
+function updateCartCount(){
+    const count = cart.reduce((total, item) => total + item.quantity, 0);
+    document.getElementById('cartCount').innerText = count;
+}
+
+function openCart(){
+    document.getElementById('cartModal').style.display = 'flex';
+    renderCart();
+}
+
+function closeCart(){
+    document.getElementById('cartModal').style.display = 'none';
+}
+
+// ສະແດງລາຍການໃນກະຕ່າ
+function renderCart(){
+    const container = document.getElementById('cartItems');
+    container.innerHTML = '';
+
+    if(cart.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">ບໍ່ມີສິນຄ້າໃນກະຕ່າ</p>';
+        return;
+    }
+
+    cart.forEach((item, index) => {
+        container.innerHTML += `
+        <div class="cart-item">
+            <div class="cart-item-header">
+                <div>
+                    <strong>${item.name}</strong> <span style="color:#689080;">(${item.price})</span>
+                </div>
+                <div class="quantity-control">
+                    <button class="qty-btn" onclick="updateQty(${index}, -1)">-</button>
+                    <span>${item.quantity}</span>
+                    <button class="qty-btn" onclick="updateQty(${index}, 1)">+</button>
+                </div>
+            </div>
+            
+            <div class="cart-item-details">
+                <label>📏 ຂະໜາດເຄັກ:</label>
+                <select onchange="updateCartDetails(${index}, 'size', this.value)">
+                    <option value="1 ປອນ" ${item.size === '1 ປອນ' ? 'selected' : ''}>1 ປອນ</option>
+                    <option value="2 ປອນ" ${item.size === '2 ປອນ' ? 'selected' : ''}>2 ປອນ</option>
+                    <option value="3 ປອນ" ${item.size === '3 ປອນ' ? 'selected' : ''}>3 ປອນ</option>
+                    <option value="4 ປອນ" ${item.size === '4 ປອນ' ? 'selected' : ''}>4 ປອນ</option>
+                    <option value="5 ປອນ" ${item.size === '5 ປອນ' ? 'selected' : ''}>5 ປອນ</option>
+                </select>
+
+                <label>✍️ ຂໍ້ຄວາມເທິງໜ້າເຄັກ:</label>
+                <input type="text" placeholder="Happy Birthday..." value="${item.message}" onchange="updateCartDetails(${index}, 'message', this.value)">
+
+                <label>⏰ ວັນທີ ແລະ ເວລາຮັບເຄັກ: <span style="color:red;">*</span></label>
+                <input type="datetime-local" value="${item.pickupDate}" onchange="updateCartDetails(${index}, 'pickupDate', this.value)">
+            </div>
+        </div>
+        `;
+    });
+}
+
+function updateQty(index, change) {
+    cart[index].quantity += change;
+    if(cart[index].quantity <= 0) {
+        cart.splice(index, 1);
+    }
+    saveData();
+    renderCart();
+    updateCartCount();
+}
+
+function updateCartDetails(index, field, value) {
+    cart[index][field] = value;
+    saveData();
+}
+
+// ສົ່ງຂໍ້ມູນໄປ WhatsApp
+function checkout(){
+    if(cart.length === 0) {
+        alert('ບໍ່ມີສິນຄ້າໃນກະຕ່າ');
+        return;
+    }
+
+    // ກວດສອບວ່າໃສ່ວັນທີຄົບຖ້ວນບໍ່
+    let missingDate = cart.some(item => !item.pickupDate);
+    if(missingDate) {
+        alert('ກະລຸນາເລືອກ ວັນທີ ແລະ ເວລາຮັບເຄັກ ໃຫ້ຄົບຖ້ວນທຸກກ້ອນດ້ວຍເດີ້!');
+        return;
+    }
+
+    let text = '🎂 *ລາຍລະອຽດການສັ່ງເຄັກຈາກ Niichá Cafe*%0A%0A';
+    
+    cart.forEach((item, idx) => {
+        text += `*ກ້ອນທີ ${idx + 1}:* ${item.name}%0A`;
+        text += `  - ຈຳນວນ: ${item.quantity} ກ້ອນ%0A`;
+        text += `  - ຂະໜາດ: ${item.size}%0A`;
+        text += `  - ຂໍ້ຄວາມ: ${item.message || 'ບໍ່ມີ'}%0A`;
+        text += `  - ວັນເວລານັດຮັບ: ${item.pickupDate.replace('T', ' ')}%0A%0A`;
+    });
+
+    text += `*ໝາຍເຫດ:* ລາຄາສຸດທ້າຍແມ່ນຂຶ້ນກັບຂະໜາດປອນ ໃຫ້ທາງຮ້ານສະຫຼຸບຄືນອີກຄັ້ງເນີ.`;
+
+    const phone = '8562058475022';
+    window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
+
+    orders.push({ id: Date.now(), itemsCount: cart.length });
+    cart = [];
+    saveData();
+    updateCartCount();
+    closeCart();
+}
+
+// ຄົ້ນຫາເຄັກ
+function searchCake(){
+    const value = document.getElementById('searchInput').value.toLowerCase();
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+        if(card.innerText.toLowerCase().includes(value)){
+            card.style.display = 'flex';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+// ລະບົບ Admin
+function openLogin(){
+    document.getElementById('loginModal').style.display = 'flex';
+}
+
+function loginAdmin(){
+    const password = document.getElementById('adminPassword').value;
+    if(password === 'admin123'){
+        isAdmin = true;
+        document.getElementById('adminPanel').classList.add('active');
+        document.getElementById('loginModal').style.display = 'none';
+        
+        // ສະແດງປຸ່ມ Delete ທັງໝົດ
+        renderCakes();
+    } else {
+        alert('ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ');
+    }
+}
+
+function addCake(){
+    const name = document.getElementById('cakeName').value;
+    const price = document.getElementById('cakePrice').value;
+    const image = document.getElementById('cakeImage').value;
+    const category = document.getElementById('cakeCategory').value;
+    const description = document.getElementById('cakeDescription').value;
+
+    if(!name || !price || !image){
+        alert('ກະລຸນາໃສ່ຂໍ້ມູນໃຫ້ຄົບຖ້ວນ');
+        return;
+    }
+
+    cakes.push({ id: Date.now(), name, price, image, category, description });
+    saveData();
+    renderCakes();
+    
+    // ລ້າງຄ່າໃນຟອມ
+    document.getElementById('cakeName').value = '';
+    document.getElementById('cakePrice').value = '';
+    document.getElementById('cakeImage').value = '';
+    document.getElementById('cakeDescription').value = '';
+}
+
+function deleteCake(id){
+    if(confirm('ຕ້ອງການລຶບເຄັກກ້ອນນີ້ແທ້ບໍ່?')) {
+        cakes = cakes.filter(c => c.id !== id);
+        saveData();
+        renderCakes();
+    }
+}
+
+function updateAnalytics(){
+    document.getElementById('totalCakes').innerText = cakes.length;
+    document.getElementById('totalOrders').innerText = orders.length;
+}
+
+function resetData(){
+    if(confirm('ຕ້ອງການລຶບຂໍ້ມູນທັງໝົດແທ້ບໍ່? ຂໍ້ມູນຈະກັບໄປເປັນຄ່າເລີ່ມຕົ້ນ.')){
+        localStorage.clear();
+        location.reload();
+    }
+}
+
+// ເລີ່ມເຮັດວຽກຄັ້ງທຳອິດ
+renderCakes();
+updateCartCount();
+</script>
+
+</body>
+</html>
