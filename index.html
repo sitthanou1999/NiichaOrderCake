@@ -618,6 +618,7 @@ function checkout(){
         text += `*ກ້ອນທີ ${idx + 1}:* ${item.name}%0A`;
         text += `  - ຈຳນວນ: ${item.quantity} ກ້ອນ%0A`;
         text += `  - ຂະໜາດ: ${item.size}%0A`;
+	text += `  - ຂໍ້ຄວາມເທິງໜ້າເຄັກ: ${item.message || 'ບໍ່ມີ'}%0A`;
         text += `  - ເພີ່ມເຕີມພິເສດ: ${item.specialRequest || 'ບໍ່ມີ'}%0A`;
         text += `  - ວັນເວລານັດຮັບ: ${item.pickupDate.replace('T', ' ')}%0A%0A`;
     });
