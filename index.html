@@ -500,6 +500,7 @@ function addToCart(id){
             quantity: 1,
             size: '1 ປອນ',
             message: '',
+	    specialRequest: '',
             pickupDate: ''
         });
     }
@@ -562,11 +563,21 @@ function renderCart(){
                 </select>
 
                 <label>✍️ ຂໍ້ຄວາມເທິງໜ້າເຄັກ:</label>
-                <input type="text" placeholder="Happy Birthday..." value="${item.message}" onchange="updateCartDetails(${index}, 'message', this.value)">
+<input type="text"
+       value="${item.message}"
+       onchange="updateCartDetails(${index}, 'message', this.value)">
 
-                <label>⏰ ວັນທີ ແລະ ເວລາຮັບເຄັກ: <span style="color:red;">*</span></label>
-                <input type="datetime-local" value="${item.pickupDate}" onchange="updateCartDetails(${index}, 'pickupDate', this.value)">
-            </div>
+<label>✨ ເພີ່ມເຕີມພິເສດ (ຖ້າມີ):</label>
+<textarea
+    style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;margin-top:4px;min-height:80px;"
+        placeholder="ເຊັ່ນ: ຂໍສີຟ້າ, ໃສ່ຕຸກກະຕາ, ຕົກແຕ່ງແບບພິເສດ..."
+    onchange="updateCartDetails(${index}, 'specialRequest', this.value)"
+>${item.specialRequest || ''}</textarea>
+
+<label>⏰ ວັນທີ ແລະ ເວລາຮັບເຄັກ: <span style="color:red;">*</span></label>
+<input type="datetime-local"
+       value="${item.pickupDate}"
+       onchange="updateCartDetails(${index}, 'pickupDate', this.value)">
         </div>
         `;
     });
@@ -607,11 +618,11 @@ function checkout(){
         text += `*ກ້ອນທີ ${idx + 1}:* ${item.name}%0A`;
         text += `  - ຈຳນວນ: ${item.quantity} ກ້ອນ%0A`;
         text += `  - ຂະໜາດ: ${item.size}%0A`;
-        text += `  - ຂໍ້ຄວາມ: ${item.message || 'ບໍ່ມີ'}%0A`;
+        text += `  - ເພີ່ມເຕີມພິເສດ: ${item.specialRequest || 'ບໍ່ມີ'}%0A`;
         text += `  - ວັນເວລານັດຮັບ: ${item.pickupDate.replace('T', ' ')}%0A%0A`;
     });
 
-    text += `*ໝາຍເຫດ:* ລາຄາສຸດທ້າຍແມ່ນຂຶ້ນກັບຂະໜາດປອນ ໃຫ້ທາງຮ້ານສະຫຼຸບຄືນອີກຄັ້ງເນີ.`;
+    text += `*ໝາຍເຫດ:* ລາຄາສຸດທ້າຍແມ່ນຂຶ້ນກັບຂະໜາດປອນ ໃຫ້ທາງຮ້ານສະຫຼຸບຄືນອີກຄັ້ງ.`;
 
     const phone = '8562058475022';
     window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
