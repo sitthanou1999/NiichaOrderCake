@@ -475,7 +475,7 @@ header p{
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-// ຄ່າ Config ຂອງໂຄງການ niicha-stock ຂອງທ່ານ
+// ຄ່າ Firebase Config ຂອງ niicha-stock
 const firebaseConfig = {
     apiKey: "AIzaSyAEVdN1IpNbbN43yHUtNHC2s9K435LXlnA",
     authDomain: "niicha-stock.firebaseapp.com",
@@ -485,11 +485,11 @@ const firebaseConfig = {
     appId: "1:1077404537823:web:161f842ed2bbb837bd6a6a"
 };
 
-// ເລີ່ມຕົ້ນລະບົບ Firebase ແລະ Firestore
+// Initialize ລະບົບ
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 📌 ວິທີແຍກ: ຕັ້ງຊື່ Collection ໃໝ່ເປັນ 'cakes' ຈະບໍ່ໄປທັບກັບ 'products' ເກົ່າຂອງທ່ານ
+// 📌 ຕັ້ງຊື່ Collection ແຍກເປັນ 'cakes' ຈະບໍ່ໄປກວນ Collection 'products' ເກົ່າຂອງທ່ານ
 const cakesCollection = collection(db, "cakes");
 
 let cakes = [];
@@ -499,7 +499,7 @@ let currentCategory = 'All';
 let isAdmin = false;
 let editingCakeId = null;
 
-// 🔄 ດຶງຂໍ້ມູນຈາກ Cloud Firestore ແບບ Real-time (.onSnapshot)
+// 🔄 ດຶງຂໍ້ມູນຈາກ Cloud Firestore ແບບ Real-time
 onSnapshot(cakesCollection, (snapshot) => {
     cakes = [];
     snapshot.forEach((doc) => {
@@ -726,14 +726,14 @@ window.checkout = function(){
     
     cart.forEach((item, idx) => {
         text += `*ກ້ອນທີ ${idx + 1}:* ${item.name}%0A`;
-        text += `  - จຳນວນ: ${item.quantity} ກ້ອນ%0A`;
+        text += `  - ຈຳນວນ: ${item.quantity} ກ້ອນ%0A`;
         text += `  - ຂະໜາດ: ${item.size}%0A`;
         text += `  - ຂໍ້ຄວາມເທິງໜ້າເຄັກ: ${item.message || 'ບໍ່ມີ'}%0A`;
         text += `  - ເພີ່ມເຕີມພິເສດ: ${item.specialRequest || 'ບໍ່ມີ'}%0A`;
         text += `  - ວັນເວລານັດຮັບ: ${item.pickupDate.replace('T', ' ')}%0A%0A`;
     });
 
-    text += `*ໝາຍເຫດ:* ລາຄາສຸດທ້າຍແມ່ນຂຶ້ນກັບຂະໜາດປອນ ໃຫ້ທາງຮ້ານສະຫຼຸບຄືນອີກຄັ້ງ.`;
+    text += `*ໝາຍເຫດ:* ລາຄາສຸດທ້າຍແມ່ນຶ້ນກັບຂະໜາດປອນ ໃຫ້ທາງຮ້ານສະຫຼຸບຄືນອີກຄັ້ງ.`;
 
     const phone = '8562058475022';
     window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
@@ -772,7 +772,7 @@ window.loginAdmin = function(){
     }
 }
 
-// 💾 ບັນທຶກ ແລະ ອັບເດດລົງ Cloud Firestore (ແຍກ Collection)
+// 💾 ບັນທຶກ ແລະ ອັບເດດລົງ Cloud Firestore
 window.saveCake = async function(){
     const name = document.getElementById('cakeName').value;
     const price = document.getElementById('cakePrice').value;
@@ -789,7 +789,6 @@ window.saveCake = async function(){
 
     try {
         if(editingCakeId){
-            // ອັບເດດເຄັກກ້ອນເກົ່າໃນ Firestore
             const cakeDocRef = doc(db, "cakes", editingCakeId);
             await updateDoc(cakeDocRef, {
                 name, price, images: imagesArray, category, description
@@ -797,7 +796,6 @@ window.saveCake = async function(){
             editingCakeId = null;
             document.getElementById('saveCakeBtn').innerText = 'Add Cake';
         } else {
-            // ເພີ່ມເຄັກກ້ອນໃໝ່ເຂົ້າ Firestore
             await addDoc(cakesCollection, {
                 name, price, images: imagesArray, category, description
             });
@@ -832,7 +830,7 @@ window.editCake = function(id){
 }
 
 window.deleteCake = async function(id){
-    if(confirm('ต้องการลบเค้กก้อนนี้ใช่หรือไม่?')) {
+    if(confirm('ຕ້ອງການລຶບເຄັກກ້ອນນີ້ແທ້ບໍ່?')) {
         try {
             await deleteDoc(doc(db, "cakes", id));
         } catch (e) {
