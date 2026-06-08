@@ -128,7 +128,6 @@ header p{
     transform:translateY(-8px);
 }
 
-/* --- ປັບປຸງສ່ວນ Gallery ຮູບພາບໃນ Card --- */
 .card-image{
     width:100%;
     height:320px;
@@ -194,7 +193,6 @@ header p{
     width: 12px;
     border-radius: 4px;
 }
-/* ---------------------------------- */
 
 .card-content{
     padding:20px;
@@ -447,12 +445,10 @@ header p{
     </select>
     <textarea id="cakeDescription" placeholder="Description"></textarea>
     <button id="saveCakeBtn" onclick="saveCake()">Add Cake</button>
-    <button onclick="resetData()" style="background: #999;">Reset All Data</button>
 
     <div class="analytics">
         <h3>Analytics</h3>
         <p>Total Cakes: <span id="totalCakes">0</span></p>
-        <p>Total Orders: <span id="totalOrders">0</span></p>
     </div>
 </div>
 
@@ -475,32 +471,45 @@ header p{
     </div>
 </div>
 
-<script>
-// ປັບປຸງຂໍ້ມູນເລີ່ມຕົ້ນໃຫ້ເປັນ Array ຂອງຮູບພາບ (images)
-let cakes = JSON.parse(localStorage.getItem('cakes')) || [
-    { id: 1, name: 'Matcha Cloud', price: 'Starting from 250,000 LAK', category: 'Premium', description: 'Premium Matcha Cake', images: ['https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=1000'] },
-    { id: 2, name: 'Chocolate Dream', price: 'Starting from 320,000 LAK', category: 'Birthday', description: 'Luxury Chocolate Cake', images: ['https://images.unsplash.com/photo-1606313564200-e75d5e30476c?q=80&w=1000'] }
-];
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-// ສ້າງ Object ໄວ້ຈື່ Index ຂອງຮູບທີ່ກຳລັງສະແດງໃນແຕ່ລະ Card
+// ຄ່າ Firebase Config ຂອງ niicha-stock
+const firebaseConfig = {
+    apiKey: "AIzaSyAEVdN1IpNbbN43yHUtNHC2s9K435LXlnA",
+    authDomain: "niicha-stock.firebaseapp.com",
+    projectId: "niicha-stock",
+    storageBucket: "niicha-stock.firebasestorage.app",
+    messagingSenderId: "1077404537823",
+    appId: "1:1077404537823:web:161f842ed2bbb837bd6a6a"
+};
+
+// Initialize ລະບົບ
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// 📌 ຕັ້ງຊື່ Collection ແຍກເປັນ 'cakes' ຈະບໍ່ໄປກວນ Collection 'products' ເກົ່າຂອງທ່ານ
+const cakesCollection = collection(db, "cakes");
+
+let cakes = [];
 let activeImageIndexes = {};
-
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
-let orders = JSON.parse(localStorage.getItem('orders')) || [];
 let currentCategory = 'All';
 let isAdmin = false;
 let editingCakeId = null;
 
-function saveData(){
-    localStorage.setItem('cakes', JSON.stringify(cakes));
-    localStorage.setItem('cart', JSON.stringify(cart));
-    localStorage.setItem('orders', JSON.stringify(orders));
-}
+// 🔄 ດຶງຂໍ້ມູນຈາກ Cloud Firestore ແບບ Real-time
+onSnapshot(cakesCollection, (snapshot) => {
+    cakes = [];
+    snapshot.forEach((doc) => {
+        cakes.push({ id: doc.id, ...doc.data() });
+    });
+    renderCakes();
+});
 
-// ຟັງຊັນປ່ຽນຮູບໄປໜ້າ-ຖອຍຫຼັງ
-function changeImage(cakeId, direction, totalImages) {
+window.changeImage = function(cakeId, direction, totalImages) {
     if (!activeImageIndexes[cakeId]) activeImageIndexes[cakeId] = 0;
-    
     activeImageIndexes[cakeId] += direction;
     
     if (activeImageIndexes[cakeId] < 0) {
@@ -509,13 +518,13 @@ function changeImage(cakeId, direction, totalImages) {
         activeImageIndexes[cakeId] = 0;
     }
     
-    // ອັບເດດສະເພາະຮູບພາບ ແລະ Dot ໃນ Card ນັ້ນໆໂດຍບໍ່ຕ້ອງ render ໃໝ່ທັງໝົດ
     const imgEl = document.getElementById(`img-${cakeId}`);
-    const cake = cakes.find(c => c.id === cakeId);
-    const imgList = cake.images || [cake.image];
-    if (imgEl) imgEl.src = imgList[activeImageIndexes[cakeId]];
+    const cake = cakes.find(c => c.id == cakeId);
+    const imgList = cake.images || [];
+    if (imgEl && imgList[activeImageIndexes[cakeId]]) {
+        imgEl.src = imgList[activeImageIndexes[cakeId]];
+    }
     
-    // ອັບເດດ Active Dot
     const dots = document.querySelectorAll(`.dot-${cakeId}`);
     dots.forEach((dot, idx) => {
         if(idx === activeImageIndexes[cakeId]) {
@@ -526,25 +535,23 @@ function changeImage(cakeId, direction, totalImages) {
     });
 }
 
-function renderCakes(){
+window.renderCakes = function(){
     const grid = document.getElementById('cakeGrid');
     grid.innerHTML = '';
 
     const filteredCakes = cakes.filter(cake => currentCategory === 'All' || cake.category === currentCategory);
 
     filteredCakes.forEach(cake => {
-        // ຮອງຮັບທັງໂຄງສ້າງເກົ່າ (image) ແລະ ໃໝ່ (images)
-        const imgList = cake.images || [cake.image];
+        const imgList = cake.images || ["https://via.placeholder.com/320"];
         if (!activeImageIndexes[cake.id]) activeImageIndexes[cake.id] = 0;
         const currentIdx = activeImageIndexes[cake.id];
 
-        // ສ້າງປຸ່ມລູກສອນ ແລະ ຈຸດ Dot ຖ້າມີຫຼາຍຮູບ
         let galleryControls = '';
         let dotsHtml = '';
         if(imgList.length > 1) {
             galleryControls = `
-                <button class="gallery-btn gallery-prev" onclick="changeImage(${cake.id}, -1, ${imgList.length})">◀</button>
-                <button class="gallery-btn gallery-next" onclick="changeImage(${cake.id}, 1, ${imgList.length})">▶</button>
+                <button class="gallery-btn gallery-prev" onclick="changeImage('${cake.id}', -1, ${imgList.length})">◀</button>
+                <button class="gallery-btn gallery-next" onclick="changeImage('${cake.id}', 1, ${imgList.length})">▶</button>
             `;
             
             dotsHtml = `<div class="image-dots">`;
@@ -567,15 +574,15 @@ function renderCakes(){
                 <p style="color:#777; font-size:14px;">${cake.description}</p>
             </div>
             <div class="card-actions">
-                <button class="btn btn-cart" onclick="addToCart(${cake.id})">ເພີ່ມເຂົ້າກະຕ່າ</button>
+                <button class="btn btn-cart" onclick="addToCart('${cake.id}')">ເພີ່ມເຂົ້າກະຕ່າ</button>
                 <button class="btn"
                     style="background:#f39c12;color:white;display:${isAdmin ? 'block' : 'none'}"
-                    onclick="editCake(${cake.id})">
+                    onclick="editCake('${cake.id}')">
                     Edit
                 </button>
                 <button class="btn btn-delete"
                     style="display:${isAdmin ? 'block' : 'none'}"
-                    onclick="deleteCake(${cake.id})">
+                    onclick="deleteCake('${cake.id}')">
                     Delete
                 </button>
             </div>
@@ -585,7 +592,7 @@ function renderCakes(){
     updateAnalytics();
 }
 
-function filterCategory(category) {
+window.filterCategory = function(category) {
     currentCategory = category;
     const buttons = document.querySelectorAll('.tab-btn');
     buttons.forEach(btn => {
@@ -598,14 +605,16 @@ function filterCategory(category) {
     renderCakes();
 }
 
-function addToCart(id){
-    const cake = cakes.find(c => c.id === id);
-    const existingItem = cart.find(item => item.id === id);
+window.addToCart = function(id){
+    const cake = cakes.find(c => c.id == id);
+    const existingItem = cart.find(item => item.id == id);
     if (existingItem) {
         existingItem.quantity += 1;
     } else {
         cart.push({
-            ...cake,
+            id: cake.id,
+            name: cake.name,
+            price: cake.price,
             quantity: 1,
             size: '1 ປອນ',
             message: '',
@@ -613,8 +622,7 @@ function addToCart(id){
             pickupDate: ''
         });
     }
-
-    saveData();
+    localStorage.setItem('cart', JSON.stringify(cart));
     updateCartCount();
     
     const cartBtn = document.getElementById('cartBtn');
@@ -622,21 +630,21 @@ function addToCart(id){
     setTimeout(() => cartBtn.classList.remove('bump'), 200);
 }
 
-function updateCartCount(){
+window.updateCartCount = function(){
     const count = cart.reduce((total, item) => total + item.quantity, 0);
     document.getElementById('cartCount').innerText = count;
 }
 
-function openCart(){
+window.openCart = function(){
     document.getElementById('cartModal').style.display = 'flex';
     renderCart();
 }
 
-function closeCart(){
+window.closeCart = function(){
     document.getElementById('cartModal').style.display = 'none';
 }
 
-function renderCart(){
+window.renderCart = function(){
     const container = document.getElementById('cartItems');
     container.innerHTML = '';
 
@@ -687,22 +695,22 @@ function renderCart(){
     });
 }
 
-function updateQty(index, change) {
+window.updateQty = function(index, change) {
     cart[index].quantity += change;
     if(cart[index].quantity <= 0) {
         cart.splice(index, 1);
     }
-    saveData();
+    localStorage.setItem('cart', JSON.stringify(cart));
     renderCart();
     updateCartCount();
 }
 
-function updateCartDetails(index, field, value) {
+window.updateCartDetails = function(index, field, value) {
     cart[index][field] = value;
-    saveData();
+    localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-function checkout(){
+window.checkout = function(){
     if(cart.length === 0) {
         alert('ບໍ່ມີສິນຄ້າໃນກະຕ່າ');
         return;
@@ -725,19 +733,18 @@ function checkout(){
         text += `  - ວັນເວລານັດຮັບ: ${item.pickupDate.replace('T', ' ')}%0A%0A`;
     });
 
-    text += `*ໝາຍເຫດ:* ລາຄາສຸດທ້າຍແມ່ນຂຶ້ນກັບຂະໜາດປອນ ໃຫ້ທາງຮ້ານສະຫຼຸບຄືນອີກຄັ້ງ.`;
+    text += `*ໝາຍເຫດ:* ລາຄາສຸດທ້າຍແມ່ນຶ້ນກັບຂະໜາດປອນ ໃຫ້ທາງຮ້ານສະຫຼຸບຄືນອີກຄັ້ງ.`;
 
     const phone = '8562058475022';
     window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
 
-    orders.push({ id: Date.now(), itemsCount: cart.length });
     cart = [];
-    saveData();
+    localStorage.setItem('cart', JSON.stringify(cart));
     updateCartCount();
     closeCart();
 }
 
-function searchCake(){
+window.searchCake = function(){
     const value = document.getElementById('searchInput').value.toLowerCase();
     const cards = document.querySelectorAll('.card');
     cards.forEach(card => {
@@ -749,11 +756,11 @@ function searchCake(){
     });
 }
 
-function openLogin(){
+window.openLogin = function(){
     document.getElementById('loginModal').style.display = 'flex';
 }
 
-function loginAdmin(){
+window.loginAdmin = function(){
     const password = document.getElementById('adminPassword').value;
     if(password === 'niicha123'){
         isAdmin = true;
@@ -765,7 +772,8 @@ function loginAdmin(){
     }
 }
 
-function saveCake(){
+// 💾 ບັນທຶກ ແລະ ອັບເດດລົງ Cloud Firestore
+window.saveCake = async function(){
     const name = document.getElementById('cakeName').value;
     const price = document.getElementById('cakePrice').value;
     const imageInput = document.getElementById('cakeImage').value;
@@ -777,48 +785,39 @@ function saveCake(){
         return;
     }
 
-    // ແຍກ URL ຮູບພາບດ້ວຍເຄື່ອງໝາຍຈຸດ , ແລ້ວຕັດຍະຫວ່າງອອກ (Trim)
     const imagesArray = imageInput.split(',').map(url => url.trim()).filter(url => url !== '');
 
-    if(editingCakeId){
-        const cake = cakes.find(c => c.id === editingCakeId);
-        cake.name = name;
-        cake.price = price;
-        cake.images = imagesArray; // ເກັບເປັນ Array
-        cake.category = category;
-        cake.description = description;
+    try {
+        if(editingCakeId){
+            const cakeDocRef = doc(db, "cakes", editingCakeId);
+            await updateDoc(cakeDocRef, {
+                name, price, images: imagesArray, category, description
+            });
+            editingCakeId = null;
+            document.getElementById('saveCakeBtn').innerText = 'Add Cake';
+        } else {
+            await addDoc(cakesCollection, {
+                name, price, images: imagesArray, category, description
+            });
+        }
 
-        editingCakeId = null;
-        document.getElementById('saveCakeBtn').innerText = 'Add Cake';
-    }else{
-        cakes.push({
-            id: Date.now(),
-            name,
-            price,
-            images: imagesArray, // ເກັບເປັນ Array
-            category,
-            description
-        });
+        document.getElementById('cakeName').value = '';
+        document.getElementById('cakePrice').value = '';
+        document.getElementById('cakeImage').value = '';
+        document.getElementById('cakeDescription').value = '';
+    } catch (e) {
+        console.error("Error saving document: ", e);
     }
-
-    saveData();
-    renderCakes();
-
-    document.getElementById('cakeName').value = '';
-    document.getElementById('cakePrice').value = '';
-    document.getElementById('cakeImage').value = '';
-    document.getElementById('cakeDescription').value = '';
 }
 
-function editCake(id){
-    const cake = cakes.find(c => c.id === id);
+window.editCake = function(id){
+    const cake = cakes.find(c => c.id == id);
     editingCakeId = id;
 
     document.getElementById('cakeName').value = cake.name;
     document.getElementById('cakePrice').value = cake.price;
     
-    // ເອົາ Array ຂອງຮູບພາບມາລວມກັນເປັນ string ຄືນ ໂດຍຂັ້ນດ້ວຍຈຸດ
-    const imgList = cake.images || [cake.image];
+    const imgList = cake.images || [];
     document.getElementById('cakeImage').value = imgList.join(', ');
     
     document.getElementById('cakeCategory').value = cake.category;
@@ -830,28 +829,20 @@ function editCake(id){
     }
 }
 
-function deleteCake(id){
+window.deleteCake = async function(id){
     if(confirm('ຕ້ອງການລຶບເຄັກກ້ອນນີ້ແທ້ບໍ່?')) {
-        cakes = cakes.filter(c => c.id !== id);
-        saveData();
-        renderCakes();
+        try {
+            await deleteDoc(doc(db, "cakes", id));
+        } catch (e) {
+            console.error("Error deleting document: ", e);
+        }
     }
 }
 
-function updateAnalytics(){
+window.updateAnalytics = function(){
     document.getElementById('totalCakes').innerText = cakes.length;
-    document.getElementById('totalOrders').innerText = orders.length;
 }
 
-function resetData(){
-    if(confirm('ຕ້ອງການລຶບຂໍ້ມູນທັງໝົດແທ້ບໍ່? ຂໍ້ມູນຈະກັບໄປເປັນຄ່າເລີ່ມຕົ້ນ.')){
-        localStorage.clear();
-        location.reload();
-    }
-}
-
-// ເລີ່ມເຮັດວຽກ
-renderCakes();
 updateCartCount();
 </script>
 
